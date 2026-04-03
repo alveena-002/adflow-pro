@@ -1,94 +1,100 @@
+'use client'
+import { useState } from 'react'
 import Link from 'next/link'
-import Navbar from '../components/Navbar'
+import { useRouter } from 'next/navigation'
 
-export default function Dashboard() {
-  const ads = [
-    {title:'iPhone 15 Pro Max', status:'Active', pkg:'Premium', views:245, expires:'Apr 28, 2025'},
-    {title:'Toyota Corolla 2022', status:'Under Review', pkg:'Standard', views:0, expires:'-'},
-    {title:'Office Chair for Sale', status:'Payment Pending', pkg:'Basic', views:0, expires:'-'},
-    {title:'Samsung TV 55"', status:'Expired', pkg:'Basic', views:89, expires:'Mar 15, 2025'},
-    {title:'Freelance Services', status:'Rejected', pkg:'Standard', views:0, expires:'-'},
-  ]
+export default function Register() {
+  const router = useRouter()
+  const [form, setForm] = useState({ name:'', email:'', password:'', phone:'', city:'' })
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
 
-  const statusColor: Record<string, string> = {
-    'Active':'var(--success)',
-    'Under Review':'var(--accent)',
-    'Payment Pending':'#f97316',
-    'Expired':'var(--text2)',
-    'Rejected':'var(--danger)',
+  const handleRegister = async () => {
+    setLoading(true)
+    setError('')
+    try {
+      const res = await fetch(`http://localhost:5000/api/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form)
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setError(data.error || 'Registration failed')
+      } else {
+        localStorage.setItem('token', data.token)
+        localStorage.setItem('user', JSON.stringify(data.user))
+        router.push('/dashboard')
+      }
+    } catch {
+      setError('Server error. Please try again.')
+    }
+    setLoading(false)
   }
 
   return (
-    <div style={{minHeight:'100vh', background:'var(--bg)'}}>
-
-      <Navbar />
-
-      <div style={{maxWidth:'1100px', margin:'0 auto', padding:'2rem'}}>
-
-        {/* HEADER */}
-        <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'2rem', flexWrap:'wrap', gap:'1rem'}}>
-          <div>
-            <h1 style={{fontFamily:'Syne', fontWeight:700, fontSize:'1.8rem', marginBottom:'0.25rem'}}>My Dashboard</h1>
-            <p style={{color:'var(--text2)'}}>Manage your listings and track performance</p>
-          </div>
-          <Link href="/dashboard/create" style={{background:'var(--brand)', color:'white', padding:'10px 20px', borderRadius:'var(--radius)', textDecoration:'none', fontWeight:600}}>
-            + Post New Ad
-          </Link>
+    <div style={{minHeight:'100vh', background:'var(--bg)', display:'flex', alignItems:'center', justifyContent:'center', padding:'2rem'}}>
+      <div style={{width:'100%', maxWidth:'420px'}}>
+        
+        <div style={{textAlign:'center', marginBottom:'2rem'}}>
+          <div style={{width:'48px', height:'48px', background:'var(--brand)', borderRadius:'12px', display:'flex', alignItems:'center', justifyContent:'center', fontWeight:700, color:'white', fontSize:'20px', margin:'0 auto 1rem'}}>A</div>
+          <h1 style={{fontFamily:'Syne', fontWeight:700, fontSize:'1.8rem'}}>Create Account</h1>
+          <p style={{color:'var(--text2)', marginTop:'0.5rem'}}>Join AdFlow Pro today</p>
         </div>
 
-        {/* STATS */}
-        <div style={{display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(150px, 1fr))', gap:'1rem', marginBottom:'2rem'}}>
-          {[
-            {label:'Total Ads', value:'5', color:'var(--brand)'},
-            {label:'Active', value:'1', color:'var(--success)'},
-            {label:'Under Review', value:'1', color:'var(--accent)'},
-            {label:'Expired', value:'1', color:'var(--text2)'},
-            {label:'Rejected', value:'1', color:'var(--danger)'},
-          ].map((stat) => (
-            <div key={stat.label} style={{background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'var(--radius)', padding:'1.25rem', textAlign:'center'}}>
-              <div style={{fontSize:'2rem', fontWeight:700, color:stat.color, fontFamily:'Syne'}}>{stat.value}</div>
-              <div style={{color:'var(--text2)', fontSize:'12px', marginTop:'4px'}}>{stat.label}</div>
+        <div style={{background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'var(--radius)', padding:'2rem'}}>
+
+          {error && (
+            <div style={{background:'rgba(239,68,68,0.1)', border:'1px solid rgba(239,68,68,0.3)', color:'var(--danger)', padding:'10px 14px', borderRadius:'var(--radius)', marginBottom:'1rem', fontSize:'13px'}}>
+              {error}
             </div>
-          ))}
-        </div>
+          )}
 
-        {/* ADS TABLE */}
-        <div style={{background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'var(--radius)', overflow:'hidden'}}>
-          <div style={{padding:'1.25rem 1.5rem', borderBottom:'1px solid var(--border)', display:'flex', justifyContent:'space-between', alignItems:'center'}}>
-            <h2 style={{fontFamily:'Syne', fontWeight:600, fontSize:'1rem'}}>My Listings</h2>
+          <div style={{marginBottom:'1.25rem'}}>
+            <label style={{display:'block', marginBottom:'6px', fontSize:'13px', fontWeight:500}}>Full Name</label>
+            <input type="text" placeholder="Your full name" value={form.name} onChange={e => setForm({...form, name:e.target.value})} style={{width:'100%', background:'var(--bg)', border:'1px solid var(--border)', borderRadius:'var(--radius)', padding:'10px 14px', color:'var(--text)', fontSize:'14px', outline:'none'}} />
           </div>
-          <div style={{overflowX:'auto'}}>
-            <table style={{width:'100%', borderCollapse:'collapse', fontSize:'13px'}}>
-              <thead>
-                <tr style={{background:'var(--bg)'}}>
-                  <th style={{padding:'12px 16px', textAlign:'left', color:'var(--text2)', fontWeight:500}}>Ad Title</th>
-                  <th style={{padding:'12px 16px', textAlign:'left', color:'var(--text2)', fontWeight:500}}>Package</th>
-                  <th style={{padding:'12px 16px', textAlign:'left', color:'var(--text2)', fontWeight:500}}>Status</th>
-                  <th style={{padding:'12px 16px', textAlign:'left', color:'var(--text2)', fontWeight:500}}>Views</th>
-                  <th style={{padding:'12px 16px', textAlign:'left', color:'var(--text2)', fontWeight:500}}>Expires</th>
-                  <th style={{padding:'12px 16px', textAlign:'left', color:'var(--text2)', fontWeight:500}}>Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {ads.map((ad) => (
-                  <tr key={ad.title} style={{borderTop:'1px solid var(--border)'}}>
-                    <td style={{padding:'12px 16px', fontWeight:500}}>{ad.title}</td>
-                    <td style={{padding:'12px 16px', color:'var(--text2)'}}>{ad.pkg}</td>
-                    <td style={{padding:'12px 16px'}}>
-                      <span style={{background:`${statusColor[ad.status]}20`, color:statusColor[ad.status], fontSize:'11px', padding:'3px 10px', borderRadius:'20px', fontWeight:500}}>{ad.status}</span>
-                    </td>
-                    <td style={{padding:'12px 16px', color:'var(--text2)'}}>{ad.views}</td>
-                    <td style={{padding:'12px 16px', color:'var(--text2)'}}>{ad.expires}</td>
-                    <td style={{padding:'12px 16px'}}>
-                      <button style={{background:'var(--bg3)', color:'var(--text)', border:'none', padding:'5px 12px', borderRadius:'6px', fontSize:'12px', cursor:'pointer'}}>Edit</button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+
+          <div style={{marginBottom:'1.25rem'}}>
+            <label style={{display:'block', marginBottom:'6px', fontSize:'13px', fontWeight:500}}>Email Address</label>
+            <input type="email" placeholder="you@example.com" value={form.email} onChange={e => setForm({...form, email:e.target.value})} style={{width:'100%', background:'var(--bg)', border:'1px solid var(--border)', borderRadius:'var(--radius)', padding:'10px 14px', color:'var(--text)', fontSize:'14px', outline:'none'}} />
+          </div>
+
+          <div style={{marginBottom:'1.25rem'}}>
+            <label style={{display:'block', marginBottom:'6px', fontSize:'13px', fontWeight:500}}>Phone Number</label>
+            <input type="text" placeholder="03xx-xxxxxxx" value={form.phone} onChange={e => setForm({...form, phone:e.target.value})} style={{width:'100%', background:'var(--bg)', border:'1px solid var(--border)', borderRadius:'var(--radius)', padding:'10px 14px', color:'var(--text)', fontSize:'14px', outline:'none'}} />
+          </div>
+
+          <div style={{marginBottom:'1.25rem'}}>
+            <label style={{display:'block', marginBottom:'6px', fontSize:'13px', fontWeight:500}}>City</label>
+            <select value={form.city} onChange={e => setForm({...form, city:e.target.value})} style={{width:'100%', background:'var(--bg)', border:'1px solid var(--border)', borderRadius:'var(--radius)', padding:'10px 14px', color:'var(--text)', fontSize:'14px', outline:'none'}}>
+              <option value="">Select your city</option>
+              <option>Lahore</option>
+              <option>Karachi</option>
+              <option>Islamabad</option>
+              <option>Faisalabad</option>
+              <option>Rawalpindi</option>
+              <option>Multan</option>
+            </select>
+          </div>
+
+          <div style={{marginBottom:'1.5rem'}}>
+            <label style={{display:'block', marginBottom:'6px', fontSize:'13px', fontWeight:500}}>Password</label>
+            <input type="password" placeholder="••••••••" value={form.password} onChange={e => setForm({...form, password:e.target.value})} style={{width:'100%', background:'var(--bg)', border:'1px solid var(--border)', borderRadius:'var(--radius)', padding:'10px 14px', color:'var(--text)', fontSize:'14px', outline:'none'}} />
+          </div>
+
+          <button 
+            onClick={handleRegister}
+            disabled={loading}
+            style={{width:'100%', background:'var(--brand)', color:'white', padding:'12px', borderRadius:'var(--radius)', border:'none', fontWeight:600, fontSize:'15px', cursor:'pointer', opacity: loading ? 0.7 : 1}}>
+            {loading ? 'Creating Account...' : 'Create Account →'}
+          </button>
+
+          <div style={{textAlign:'center', marginTop:'1.5rem', color:'var(--text2)', fontSize:'13px'}}>
+            Already have an account?{' '}
+            <Link href="/login" style={{color:'var(--brand)', textDecoration:'none', fontWeight:500}}>Login here</Link>
           </div>
         </div>
-
       </div>
     </div>
   )

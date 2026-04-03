@@ -27,7 +27,7 @@ export default function Dashboard() {
           <span style={{fontFamily:'Syne', fontWeight:700, fontSize:'18px', color:'var(--text)'}}>AdFlow <span style={{color:'var(--brand)'}}>Pro</span></span>
         </Link>
         <div style={{display:'flex', alignItems:'center', gap:'1rem'}}>
-          <span style={{color:'var(--text2)', fontSize:'13px'}}>👤 Ali Hassan</span>
+          <span style={{color:'var(--text2)', fontSize:'13px'}}>👤 Alveena Kamal</span>
           <Link href="/login" style={{color:'var(--text2)', textDecoration:'none', fontSize:'13px'}}>Logout</Link>
         </div>
       </nav>
