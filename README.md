@@ -39,5 +39,9 @@ AdFlow Pro 🚀
 - **Super Admin** — Full system access
 
 
+<img width="1915" height="1008" alt="image" src="https://github.com/user-attachments/assets/dca6b75e-a486-470c-bb80-c7a4f8ceb530" />
+
+<img width="1919" height="1002" alt="image" src="https://github.com/user-attachments/assets/5874b697-ba09-425f-b2c1-a0365b952073" />
+
 
 
