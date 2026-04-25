@@ -1,40 +1,105 @@
+﻿'use client'
+
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import Navbar from '../components/Navbar'
+
+interface Ad {
+  id: string
+  title: string
+  description: string
+  price: number
+  status: string
+  image_url?: string
+  packages: { name: string }
+  categories: { name: string }
+  cities: { name: string }
+}
+
+const statusColor: Record<string, string> = {
+  draft: 'var(--text2)',
+  published: 'var(--success)',
+  under_review: 'var(--accent)',
+  rejected: 'var(--danger)',
+  expired: 'var(--text2)',
+}
 
 export default function Dashboard() {
-  const ads = [
-    {title:'iPhone 15 Pro Max', status:'Active', pkg:'Premium', views:245, expires:'Apr 28, 2025'},
-    {title:'Toyota Corolla 2022', status:'Under Review', pkg:'Standard', views:0, expires:'-'},
-    {title:'Office Chair for Sale', status:'Payment Pending', pkg:'Basic', views:0, expires:'-'},
-    {title:'Samsung TV 55"', status:'Expired', pkg:'Basic', views:89, expires:'Mar 15, 2025'},
-    {title:'Freelance Services', status:'Rejected', pkg:'Standard', views:0, expires:'-'},
-  ]
+  const [ads, setAds] = useState<Ad[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  const router = useRouter()
 
-  const statusColor: Record<string, string> = {
-    'Active':'var(--success)',
-    'Under Review':'var(--accent)',
-    'Payment Pending':'#f97316',
-    'Expired':'var(--text2)',
-    'Rejected':'var(--danger)',
+  useEffect(() => {
+    const token = localStorage.getItem('token')
+    if (!token) {
+      router.push('/login')
+      return
+    }
+    fetchMyAds(token)
+  }, [])
+
+  const fetchMyAds = async (token: string) => {
+    try {
+      const res = await fetch('http://localhost:5000/api/ads/my-ads', {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setError(data.error || 'Unable to load your ads')
+      } else {
+        setAds(data.ads || [])
+      }
+    } catch (err) {
+      console.error(err)
+      setError('Server error while loading ads')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleDelete = async (id: string) => {
+    const confirmed = window.confirm('Are you sure you want to delete this ad?')
+    if (!confirmed) return
+
+    const token = localStorage.getItem('token')
+    if (!token) return router.push('/login')
+
+    try {
+      const res = await fetch(`http://localhost:5000/api/ads/${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setError(data.error || 'Unable to delete ad')
+      } else {
+        setAds((current) => current.filter((ad) => ad.id !== id))
+      }
+    } catch (err) {
+      console.error(err)
+      setError('Server error while deleting ad')
+    }
+  }
+
+  if (loading) {
+    return <div style={{minHeight:'100vh', padding:'2rem', color:'var(--text)'}}>Loading your ads...</div>
+  }
+
+  const stats = {
+    total: ads.length,
+    published: ads.filter((ad) => ad.status === 'published').length,
+    under_review: ads.filter((ad) => ad.status === 'under_review').length,
+    draft: ads.filter((ad) => ad.status === 'draft').length,
+    rejected: ads.filter((ad) => ad.status === 'rejected').length,
   }
 
   return (
     <div style={{minHeight:'100vh', background:'var(--bg)'}}>
-
-      {/* NAVBAR */}
-      <nav style={{background:'rgba(15,23,42,0.95)', borderBottom:'1px solid var(--border)', padding:'0 2rem', display:'flex', alignItems:'center', justifyContent:'space-between', height:'60px', position:'sticky', top:0, zIndex:100, backdropFilter:'blur(12px)'}}>
-        <Link href="/" style={{display:'flex', alignItems:'center', gap:'8px', textDecoration:'none'}}>
-          <div style={{width:'32px', height:'32px', background:'var(--brand)', borderRadius:'8px', display:'flex', alignItems:'center', justifyContent:'center', fontWeight:700, color:'white', fontFamily:'Syne'}}>A</div>
-          <span style={{fontFamily:'Syne', fontWeight:700, fontSize:'18px', color:'var(--text)'}}>AdFlow <span style={{color:'var(--brand)'}}>Pro</span></span>
-        </Link>
-        <div style={{display:'flex', alignItems:'center', gap:'1rem'}}>
-          <span style={{color:'var(--text2)', fontSize:'13px'}}>👤 Alveena Kamal</span>
-          <Link href="/login" style={{color:'var(--text2)', textDecoration:'none', fontSize:'13px'}}>Logout</Link>
-        </div>
-      </nav>
+      <Navbar />
 
       <div style={{maxWidth:'1100px', margin:'0 auto', padding:'2rem'}}>
-
-        {/* HEADER */}
         <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'2rem', flexWrap:'wrap', gap:'1rem'}}>
           <div>
             <h1 style={{fontFamily:'Syne', fontWeight:700, fontSize:'1.8rem', marginBottom:'0.25rem'}}>My Dashboard</h1>
@@ -45,23 +110,35 @@ export default function Dashboard() {
           </Link>
         </div>
 
-        {/* STATS */}
+        {error && (
+          <div style={{background:'rgba(239,68,68,0.1)', border:'1px solid rgba(239,68,68,0.3)', color:'var(--danger)', padding:'12px 16px', borderRadius:'12px', marginBottom:'1.5rem'}}>
+            {error}
+          </div>
+        )}
+
         <div style={{display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(150px, 1fr))', gap:'1rem', marginBottom:'2rem'}}>
-          {[
-            {label:'Total Ads', value:'5', color:'var(--brand)'},
-            {label:'Active', value:'1', color:'var(--success)'},
-            {label:'Under Review', value:'1', color:'var(--accent)'},
-            {label:'Expired', value:'1', color:'var(--text2)'},
-            {label:'Rejected', value:'1', color:'var(--danger)'},
-          ].map((stat) => (
-            <div key={stat.label} style={{background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'var(--radius)', padding:'1.25rem', textAlign:'center'}}>
-              <div style={{fontSize:'2rem', fontWeight:700, color:stat.color, fontFamily:'Syne'}}>{stat.value}</div>
-              <div style={{color:'var(--text2)', fontSize:'12px', marginTop:'4px'}}>{stat.label}</div>
-            </div>
-          ))}
+          <div style={{background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'var(--radius)', padding:'1.25rem', textAlign:'center'}}>
+            <div style={{fontSize:'2rem', fontWeight:700, color:'var(--brand)', fontFamily:'Syne'}}>{stats.total}</div>
+            <div style={{color:'var(--text2)', fontSize:'12px', marginTop:'4px'}}>Total Ads</div>
+          </div>
+          <div style={{background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'var(--radius)', padding:'1.25rem', textAlign:'center'}}>
+            <div style={{fontSize:'2rem', fontWeight:700, color:'var(--success)', fontFamily:'Syne'}}>{stats.published}</div>
+            <div style={{color:'var(--text2)', fontSize:'12px', marginTop:'4px'}}>Published</div>
+          </div>
+          <div style={{background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'var(--radius)', padding:'1.25rem', textAlign:'center'}}>
+            <div style={{fontSize:'2rem', fontWeight:700, color:'var(--accent)', fontFamily:'Syne'}}>{stats.under_review}</div>
+            <div style={{color:'var(--text2)', fontSize:'12px', marginTop:'4px'}}>Under Review</div>
+          </div>
+          <div style={{background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'var(--radius)', padding:'1.25rem', textAlign:'center'}}>
+            <div style={{fontSize:'2rem', fontWeight:700, color:'var(--text2)', fontFamily:'Syne'}}>{stats.draft}</div>
+            <div style={{color:'var(--text2)', fontSize:'12px', marginTop:'4px'}}>Draft</div>
+          </div>
+          <div style={{background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'var(--radius)', padding:'1.25rem', textAlign:'center'}}>
+            <div style={{fontSize:'2rem', fontWeight:700, color:'var(--danger)', fontFamily:'Syne'}}>{stats.rejected}</div>
+            <div style={{color:'var(--text2)', fontSize:'12px', marginTop:'4px'}}>Rejected</div>
+          </div>
         </div>
 
-        {/* ADS TABLE */}
         <div style={{background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'var(--radius)', overflow:'hidden'}}>
           <div style={{padding:'1.25rem 1.5rem', borderBottom:'1px solid var(--border)', display:'flex', justifyContent:'space-between', alignItems:'center'}}>
             <h2 style={{fontFamily:'Syne', fontWeight:600, fontSize:'1rem'}}>My Listings</h2>
@@ -70,26 +147,27 @@ export default function Dashboard() {
             <table style={{width:'100%', borderCollapse:'collapse', fontSize:'13px'}}>
               <thead>
                 <tr style={{background:'var(--bg)'}}>
-                  <th style={{padding:'12px 16px', textAlign:'left', color:'var(--text2)', fontWeight:500}}>Ad Title</th>
-                  <th style={{padding:'12px 16px', textAlign:'left', color:'var(--text2)', fontWeight:500}}>Package</th>
+                  <th style={{padding:'12px 16px', textAlign:'left', color:'var(--text2)', fontWeight:500}}>Title</th>
+                  <th style={{padding:'12px 16px', textAlign:'left', color:'var(--text2)', fontWeight:500}}>Category</th>
                   <th style={{padding:'12px 16px', textAlign:'left', color:'var(--text2)', fontWeight:500}}>Status</th>
-                  <th style={{padding:'12px 16px', textAlign:'left', color:'var(--text2)', fontWeight:500}}>Views</th>
-                  <th style={{padding:'12px 16px', textAlign:'left', color:'var(--text2)', fontWeight:500}}>Expires</th>
-                  <th style={{padding:'12px 16px', textAlign:'left', color:'var(--text2)', fontWeight:500}}>Action</th>
+                  <th style={{padding:'12px 16px', textAlign:'left', color:'var(--text2)', fontWeight:500}}>Price</th>
+                  <th style={{padding:'12px 16px', textAlign:'left', color:'var(--text2)', fontWeight:500}}>City</th>
+                  <th style={{padding:'12px 16px', textAlign:'left', color:'var(--text2)', fontWeight:500}}>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {ads.map((ad) => (
-                  <tr key={ad.title} style={{borderTop:'1px solid var(--border)'}}>
+                  <tr key={ad.id} style={{borderTop:'1px solid var(--border)'}}>
                     <td style={{padding:'12px 16px', fontWeight:500}}>{ad.title}</td>
-                    <td style={{padding:'12px 16px', color:'var(--text2)'}}>{ad.pkg}</td>
+                    <td style={{padding:'12px 16px', color:'var(--text2)'}}>{ad.categories?.name}</td>
                     <td style={{padding:'12px 16px'}}>
-                      <span style={{background:`${statusColor[ad.status]}20`, color:statusColor[ad.status], fontSize:'11px', padding:'3px 10px', borderRadius:'20px', fontWeight:500}}>{ad.status}</span>
+                      <span style={{background:`${statusColor[ad.status] || 'var(--text2)'}20`, color:statusColor[ad.status] || 'var(--text2)', fontSize:'11px', padding:'4px 10px', borderRadius:'20px', fontWeight:500, textTransform:'capitalize'}}>{ad.status.replace('_', ' ')}</span>
                     </td>
-                    <td style={{padding:'12px 16px', color:'var(--text2)'}}>{ad.views}</td>
-                    <td style={{padding:'12px 16px', color:'var(--text2)'}}>{ad.expires}</td>
-                    <td style={{padding:'12px 16px'}}>
-                      <button style={{background:'var(--bg3)', color:'var(--text)', border:'none', padding:'5px 12px', borderRadius:'6px', fontSize:'12px', cursor:'pointer'}}>Edit</button>
+                    <td style={{padding:'12px 16px', color:'var(--text2)'}}>PKR {ad.price}</td>
+                    <td style={{padding:'12px 16px', color:'var(--text2)'}}>{ad.cities?.name}</td>
+                    <td style={{padding:'12px 16px', display:'flex', gap:'0.5rem', flexWrap:'wrap'}}>
+                      <Link href={`/dashboard/edit/${ad.id}`} style={{background:'var(--brand)', color:'white', padding:'8px 12px', borderRadius:'8px', fontSize:'12px', textDecoration:'none'}}>Edit</Link>
+                      <button onClick={() => handleDelete(ad.id)} style={{background:'rgba(239,68,68,0.15)', color:'var(--danger)', border:'1px solid rgba(239,68,68,0.25)', padding:'8px 12px', borderRadius:'8px', fontSize:'12px', cursor:'pointer'}}>Delete</button>
                     </td>
                   </tr>
                 ))}
@@ -97,7 +175,6 @@ export default function Dashboard() {
             </table>
           </div>
         </div>
-
       </div>
     </div>
   )

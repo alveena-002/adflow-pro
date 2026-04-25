@@ -1,14 +1,28 @@
-const validate = (schema) => (req, res, next) => {
-  const result = schema.safeParse(req.body)
-  if (!result.success) {
-    console.log('Validation errors:', result.error.errors)
-    return res.status(400).json({
-      error: 'Validation failed',
-      details: result.error.errors
-    })
-  }
-  req.body = result.data
-  next()
-}
+const { validationResult } = require("express-validator");
 
-module.exports = validate
+const validate = (req, res, next) => {
+  const result = validationResult(req);
+
+  if (!result.isEmpty()) {
+    const errors = result.array().map((err) => ({
+      field: err.path || err.param,
+      message: err.msg,
+      value: err.value,
+    }));
+
+    if (process.env.NODE_ENV !== "production") {
+      console.warn("Validation failed:", JSON.stringify(errors, null, 2));
+      console.warn("Request body:", JSON.stringify(req.body, null, 2));
+    }
+
+    return res.status(422).json({
+      success: false,
+      message: errors.map((e) => `${e.field}: ${e.message}`).join(" | "),
+      errors,
+    });
+  }
+
+  next();
+};
+
+module.exports = { validate };

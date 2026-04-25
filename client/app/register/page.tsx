@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 
 export default function Register() {
   const router = useRouter()
-  const [form, setForm] = useState({ name:'', email:'', password:'', phone:'', city:'' })
+  const [form, setForm] = useState({ name:'', email:'', password:'', phone:'', city:'', role:'buyer' })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -24,7 +24,8 @@ export default function Register() {
       } else {
         localStorage.setItem('token', data.token)
         localStorage.setItem('user', JSON.stringify(data.user))
-        router.push('/dashboard')
+        if (data.user.role === 'buyer') router.push('/explore')
+        else router.push('/dashboard')
       }
     } catch {
       setError('Server error. Please try again.')
@@ -78,9 +79,24 @@ export default function Register() {
             </select>
           </div>
 
-          <div style={{marginBottom:'1.5rem'}}>
+          <div style={{marginBottom:'1.25rem'}}>
             <label style={{display:'block', marginBottom:'6px', fontSize:'13px', fontWeight:500}}>Password</label>
             <input type="password" placeholder="••••••••" value={form.password} onChange={e => setForm({...form, password:e.target.value})} style={{width:'100%', background:'var(--bg)', border:'1px solid var(--border)', borderRadius:'var(--radius)', padding:'10px 14px', color:'var(--text)', fontSize:'14px', outline:'none'}} />
+          </div>
+
+          {/* ROLE SELECTION */}
+          <div style={{marginBottom:'1.5rem'}}>
+            <label style={{display:'block', marginBottom:'8px', fontSize:'13px', fontWeight:500}}>I want to</label>
+            <div style={{display:'flex', gap:'1rem'}}>
+              <div onClick={() => setForm({...form, role:'buyer'})} 
+                style={{flex:1, padding:'12px', borderRadius:'var(--radius)', border:`2px solid ${form.role==='buyer' ? 'var(--brand)' : 'var(--border)'}`, cursor:'pointer', textAlign:'center', fontSize:'13px', fontWeight:600, background: form.role==='buyer' ? 'rgba(26,86,219,0.1)' : 'transparent', transition:'all 0.2s'}}>
+                🛒 Buy Products
+              </div>
+              <div onClick={() => setForm({...form, role:'client'})} 
+                style={{flex:1, padding:'12px', borderRadius:'var(--radius)', border:`2px solid ${form.role==='client' ? 'var(--brand)' : 'var(--border)'}`, cursor:'pointer', textAlign:'center', fontSize:'13px', fontWeight:600, background: form.role==='client' ? 'rgba(26,86,219,0.1)' : 'transparent', transition:'all 0.2s'}}>
+                📢 Post Ads
+              </div>
+            </div>
           </div>
 
           <button 

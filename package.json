@@ -1,7 +1,16 @@
 {
+  "name": "adflow-pro",
+  "version": "1.0.0",
+  "scripts": {
+    "install-all": "npm install && npm install --prefix client && npm install --prefix server",
+    "dev": "concurrently \"npm run dev --prefix client\" \"node server/src/index.js\""
+  },
   "dependencies": {
     "autoprefixer": "^10.4.27",
     "postcss": "^8.5.8",
     "tailwindcss": "^4.2.2"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
   }
 }

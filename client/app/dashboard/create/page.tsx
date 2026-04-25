@@ -7,7 +7,7 @@ export default function CreateAd() {
   const router = useRouter()
   const [form, setForm] = useState({
     title: '', description: '', price: '',
-    category_id: '', city_id: '', package_id: '', media_url: ''
+    category_id: '', city_id: '', package_id: '', image_url: ''
   })
   const [categories, setCategories] = useState<{id:string,name:string}[]>([])
   const [cities, setCities] = useState<{id:string,name:string}[]>([])
@@ -29,7 +29,7 @@ export default function CreateAd() {
       const res = await fetch('http://localhost:5000/api/ads', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify(form)
+        body: JSON.stringify({ ...form, price: Number(form.price) })
       })
       const data = await res.json()
       if (!res.ok) {
@@ -111,8 +111,8 @@ export default function CreateAd() {
           </div>
 
           <div style={{marginBottom:'1.5rem'}}>
-            <label style={{display:'block', marginBottom:'6px', fontSize:'13px', fontWeight:500}}>Media URL (Image/YouTube)</label>
-            <input type="text" placeholder="https://example.com/image.jpg" value={form.media_url} onChange={e => setForm({...form, media_url:e.target.value})} style={{width:'100%', background:'var(--bg)', border:'1px solid var(--border)', borderRadius:'var(--radius)', padding:'10px 14px', color:'var(--text)', fontSize:'14px', outline:'none'}} />
+            <label style={{display:'block', marginBottom:'6px', fontSize:'13px', fontWeight:500}}>Image URL</label>
+            <input type="text" placeholder="https://example.com/image.jpg" value={form.image_url} onChange={e => setForm({...form, image_url:e.target.value})} style={{width:'100%', background:'var(--bg)', border:'1px solid var(--border)', borderRadius:'var(--radius)', padding:'10px 14px', color:'var(--text)', fontSize:'14px', outline:'none'}} />
           </div>
 
           <div style={{display:'flex', gap:'1rem'}}>

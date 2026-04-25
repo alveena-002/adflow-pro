@@ -1,11 +1,11 @@
-const supabase = require('../db/db')
+const supabase = require('../config/supabase')
 
 const getAds = async (req, res) => {
   try {
     const { category, city, search } = req.query
     let query = supabase
       .from('ads')
-      .select('*, packages(name, weight), categories(name), cities(name)')
+      .select('*, packages(name, weight), categories(name), cities(name), image_url')
       .eq('status', 'published')
 
     if (category) query = query.eq('category_id', category)
@@ -26,12 +26,22 @@ const getAdBySlug = async (req, res) => {
     const { slug } = req.params
     const { data, error } = await supabase
       .from('ads')
-      .select('*, packages(name, weight), categories(name), cities(name)')
+      .select('*, packages(name, weight), categories(name), cities(name), image_url')
       .eq('slug', slug)
       .eq('status', 'published')
       .single()
 
     if (error || !data) return res.status(404).json({ error: 'Ad not found' })
+
+    // Fetch user email
+    const { data: userData, error: userError } = await supabase.auth.admin.getUserById(data.user_id)
+    if (userError) {
+      console.error(userError)
+      data.contact_email = null
+    } else {
+      data.contact_email = userData.user.email
+    }
+
     res.json({ ad: data })
   } catch (err) {
     console.error(err)
@@ -41,21 +51,17 @@ const getAdBySlug = async (req, res) => {
 
 const createAd = async (req, res) => {
   try {
-    const { title, description, category_id, city_id, package_id, price, media_url } = req.body
+    const { title, description, category_id, city_id, package_id, price, image_url } = req.body
     const user_id = req.user.id
     const slug = title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') + '-' + Date.now()
 
     const { data, error } = await supabase
       .from('ads')
-      .insert([{ user_id, title, slug, description, category_id, city_id, package_id, price, status: 'draft' }])
+      .insert([{ user_id, title, slug, description, category_id, city_id, package_id, price, image_url, status: 'draft' }])
       .select()
       .single()
 
     if (error) throw error
-
-    if (media_url) {
-      await supabase.from('ad_media').insert([{ ad_id: data.id, source_type: 'image', original_url: media_url, thumbnail_url: media_url, validation_status: 'valid' }])
-    }
 
     res.status(201).json({ message: 'Ad created successfully', ad: data })
   } catch (err) {
@@ -64,8 +70,76 @@ const createAd = async (req, res) => {
   }
 }
 
+const updateAd = async (req, res) => {
+  try {
+    const { id } = req.params
+    const { title, description, category_id, city_id, package_id, price, image_url, status } = req.body
+    const user_id = req.user.id
+
+    const { data: existingAd, error: fetchError } = await supabase
+      .from('ads')
+      .select('user_id')
+      .eq('id', id)
+      .single()
+
+    if (fetchError || !existingAd) return res.status(404).json({ error: 'Ad not found' })
+    if (existingAd.user_id !== user_id) return res.status(403).json({ error: 'Not authorized' })
+
+    const updateFields = {
+      title,
+      description,
+      category_id,
+      city_id,
+      package_id,
+      price,
+      image_url,
+    }
+
+    if (status) updateFields.status = status
+
+    const { data, error } = await supabase
+      .from('ads')
+      .update(updateFields)
+      .eq('id', id)
+      .select()
+      .single()
+
+    if (error) throw error
+
+    res.json({ message: 'Ad updated successfully', ad: data })
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({ error: 'Server error' })
+  }
+}
+
+const deleteAd = async (req, res) => {
+  try {
+    const { id } = req.params
+    const user_id = req.user.id
+
+    const { data: existingAd, error: fetchError } = await supabase
+      .from('ads')
+      .select('user_id')
+      .eq('id', id)
+      .single()
+
+    if (fetchError || !existingAd) return res.status(404).json({ error: 'Ad not found' })
+    if (existingAd.user_id !== user_id) return res.status(403).json({ error: 'Not authorized' })
+
+    const { error } = await supabase.from('ads').delete().eq('id', id)
+    if (error) throw error
+
+    res.json({ message: 'Ad deleted successfully' })
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({ error: 'Server error' })
+  }
+}
+
 const getMyAds = async (req, res) => {
   try {
+    console.log('GET /api/ads/my-ads called for user:', req.user?.id)
     const user_id = req.user.id
     const { data, error } = await supabase
       .from('ads')
@@ -99,4 +173,4 @@ const getPackages = async (req, res) => {
   res.json({ packages: data })
 }
 
-module.exports = { getAds, getAdBySlug, createAd, getMyAds, getCategories, getCities, getPackages }
+module.exports = { getAds, getAdBySlug, createAd, updateAd, deleteAd, getMyAds, getCategories, getCities, getPackages }
