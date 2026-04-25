@@ -85,21 +85,23 @@ export default function Home() {
           <p style={{color:'var(--text2)', marginBottom:'2rem'}}>Top sponsored ads right now</p>
           <div style={{display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(260px, 1fr))', gap:'1.5rem'}}>
             {[
-              {title:'iPhone 15 Pro Max - 256GB', cat:'Electronics', city:'Lahore', price:'PKR 285,000', pkg:'Premium'},
-              {title:'2BHK Apartment for Rent', cat:'Real Estate', city:'Karachi', price:'PKR 45,000/mo', pkg:'Standard'},
-              {title:'Toyota Corolla 2022', cat:'Vehicles', city:'Islamabad', price:'PKR 4,200,000', pkg:'Premium'},
-              {title:'Freelance Web Designer', cat:'Services', city:'Faisalabad', price:'PKR 15,000', pkg:'Standard'},
+              {title:'iPhone 15 Pro Max - 256GB', cat:'Electronics', city:'Lahore', price:'PKR 285,000', pkg:'Premium', image:'https://images.unsplash.com/photo-1695048133142-1a20484d2569?auto=format&fit=crop&q=80&w=400&h=300'},
+              {title:'2BHK Apartment for Rent', cat:'Real Estate', city:'Karachi', price:'PKR 45,000/mo', pkg:'Standard', image:'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&q=80&w=400&h=300'},
+              {title:'Toyota Corolla 2022', cat:'Vehicles', city:'Islamabad', price:'PKR 4,200,000', pkg:'Premium', image:'https://images.unsplash.com/photo-1590362891991-f7615bc0f3c5?auto=format&fit=crop&q=80&w=400&h=300'},
+              {title:'Freelance Web Designer', cat:'Services', city:'Faisalabad', price:'PKR 15,000', pkg:'Standard', image:'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&q=80&w=400&h=300'},
             ].map((ad) => (
-              <div key={ad.title} style={{background:'var(--bg)', border:'1px solid var(--border)', borderRadius:'var(--radius)', overflow:'hidden', cursor:'pointer'}}>
-                <div style={{height:'160px', background:'linear-gradient(135deg, var(--bg3), var(--bg2))', display:'flex', alignItems:'center', justifyContent:'center', color:'var(--text2)', fontSize:'2rem'}}>🖼</div>
-                <div style={{padding:'1rem'}}>
-                  <div style={{display:'flex', justifyContent:'space-between', marginBottom:'8px'}}>
-                    <span style={{background:'rgba(26,86,219,0.15)', color:'var(--brand)', fontSize:'11px', padding:'2px 8px', borderRadius:'20px'}}>{ad.cat}</span>
-                    <span style={{background: ad.pkg==='Premium' ? 'rgba(124,58,237,0.2)' : 'rgba(26,86,219,0.15)', color: ad.pkg==='Premium' ? '#a78bfa' : 'var(--brand)', fontSize:'11px', padding:'2px 8px', borderRadius:'20px'}}>{ad.pkg}</span>
+              <div key={ad.title} style={{background:'var(--bg)', border:'1px solid var(--border)', borderRadius:'var(--radius)', overflow:'hidden', cursor:'pointer', transition: 'transform 0.2s, box-shadow 0.2s'}} className="hover:shadow-lg hover:-translate-y-1">
+                <div style={{height:'180px', position: 'relative', overflow: 'hidden'}}>
+                  <img src={ad.image} alt={ad.title} style={{width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.5s'}} className="hover:scale-105" />
+                </div>
+                <div style={{padding:'1.25rem'}}>
+                  <div style={{display:'flex', justifyContent:'space-between', marginBottom:'12px'}}>
+                    <span style={{background:'rgba(26,86,219,0.15)', color:'var(--brand)', fontSize:'11px', padding:'4px 10px', borderRadius:'20px', fontWeight: 600}}>{ad.cat}</span>
+                    <span style={{background: ad.pkg==='Premium' ? 'rgba(124,58,237,0.15)' : 'rgba(26,86,219,0.1)', color: ad.pkg==='Premium' ? '#a78bfa' : 'var(--brand)', fontSize:'11px', padding:'4px 10px', borderRadius:'20px', fontWeight: 600}}>{ad.pkg}</span>
                   </div>
-                  <div style={{fontWeight:600, marginBottom:'4px', fontSize:'14px'}}>{ad.title}</div>
-                  <div style={{color:'var(--text2)', fontSize:'12px', marginBottom:'8px'}}>📍 {ad.city}</div>
-                  <div style={{fontWeight:700, color:'var(--accent)'}}>{ad.price}</div>
+                  <div style={{fontWeight:600, marginBottom:'6px', fontSize:'15px'}}>{ad.title}</div>
+                  <div style={{color:'var(--text2)', fontSize:'12px', marginBottom:'12px'}}>📍 {ad.city}</div>
+                  <div style={{fontWeight:700, color:'var(--accent)', fontSize:'16px'}}>{ad.price}</div>
                 </div>
               </div>
             ))}

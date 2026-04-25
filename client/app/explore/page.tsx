@@ -1,16 +1,41 @@
+'use client'
+
+import { useEffect, useState } from 'react'
+import Link from 'next/link'
 import Navbar from '../components/Navbar'
 
+interface Ad {
+  id: number
+  title: string
+  slug: string
+  price: number
+  categories: { name: string }
+  cities: { name: string }
+  packages: { name: string; weight: number }
+  image_url: string
+}
+
 export default function Explore() {
-  const ads = [
-    {title:'iPhone 15 Pro Max 256GB', cat:'Electronics', city:'Lahore', price:'PKR 285,000', pkg:'Premium', days:25},
-    {title:'2BHK Apartment for Rent', cat:'Real Estate', city:'Karachi', price:'PKR 45,000/mo', pkg:'Standard', days:10},
-    {title:'Toyota Corolla 2022', cat:'Vehicles', city:'Islamabad', price:'PKR 4,200,000', pkg:'Premium', days:28},
-    {title:'Freelance Web Designer', cat:'Services', city:'Faisalabad', price:'PKR 15,000', pkg:'Standard', days:8},
-    {title:'Samsung 55" Smart TV', cat:'Electronics', city:'Multan', price:'PKR 120,000', pkg:'Basic', days:5},
-    {title:'Office Space for Rent', cat:'Real Estate', city:'Rawalpindi', price:'PKR 80,000/mo', pkg:'Premium', days:22},
-    {title:'Honda Civic 2021', cat:'Vehicles', city:'Lahore', price:'PKR 3,800,000', pkg:'Standard', days:12},
-    {title:'Graphic Designer Available', cat:'Services', city:'Karachi', price:'PKR 12,000', pkg:'Basic', days:3},
-  ]
+  const [ads, setAds] = useState<Ad[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetchAds()
+  }, [])
+
+  const fetchAds = async () => {
+    try {
+      const res = await fetch('http://localhost:5000/api/ads')
+      const data = await res.json()
+      setAds(data.ads)
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (loading) return <div>Loading...</div>
 
   return (
     <div style={{minHeight:'100vh', background:'var(--bg)'}}>
@@ -50,24 +75,42 @@ export default function Explore() {
           </select>
         </div>
 
+        {/* LOGIN AS CLIENT SECTION */}
+        <div style={{background:'linear-gradient(135deg, rgba(26,86,219,0.1) 0%, rgba(26,86,219,0.05) 100%)', border:'1px solid rgba(26,86,219,0.2)', borderRadius:'var(--radius)', padding:'2rem', marginBottom:'2rem', textAlign:'center'}}>
+          <h2 style={{fontFamily:'Syne', fontWeight:600, fontSize:'1.5rem', marginBottom:'0.5rem', color:'var(--brand)'}}>Post Your Own Ads</h2>
+          <p style={{color:'var(--text2)', marginBottom:'1.5rem'}}>Login as a client to create and manage your advertisements</p>
+          <div style={{display:'flex', gap:'1rem', justifyContent:'center', flexWrap:'wrap'}}>
+            <Link href="/login" style={{background:'var(--brand)', color:'white', padding:'12px 24px', borderRadius:'var(--radius)', textDecoration:'none', fontWeight:600, fontSize:'14px'}}>
+              Login as Client →
+            </Link>
+            <Link href="/register" style={{background:'var(--bg2)', border:'1px solid var(--border)', color:'var(--text)', padding:'12px 24px', borderRadius:'var(--radius)', textDecoration:'none', fontWeight:600, fontSize:'14px'}}>
+              Register as Client
+            </Link>
+          </div>
+        </div>
+
         {/* ADS GRID */}
         <div style={{display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(260px, 1fr))', gap:'1.5rem'}}>
           {ads.map((ad) => (
-            <div key={ad.title} style={{background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'var(--radius)', overflow:'hidden', cursor:'pointer', transition:'border-color 0.2s'}}>
-              <div style={{height:'160px', background:'linear-gradient(135deg, var(--bg3), var(--bg2))', display:'flex', alignItems:'center', justifyContent:'center', color:'var(--text2)', fontSize:'2.5rem'}}>🖼</div>
-              <div style={{padding:'1rem'}}>
-                <div style={{display:'flex', justifyContent:'space-between', marginBottom:'8px'}}>
-                  <span style={{background:'rgba(26,86,219,0.15)', color:'var(--brand)', fontSize:'11px', padding:'2px 8px', borderRadius:'20px'}}>{ad.cat}</span>
-                  <span style={{background: ad.pkg==='Premium' ? 'rgba(124,58,237,0.2)' : ad.pkg==='Standard' ? 'rgba(26,86,219,0.15)' : 'rgba(255,255,255,0.05)', color: ad.pkg==='Premium' ? '#a78bfa' : ad.pkg==='Standard' ? 'var(--brand)' : 'var(--text2)', fontSize:'11px', padding:'2px 8px', borderRadius:'20px'}}>{ad.pkg}</span>
+            <Link key={ad.id} href={`/ad/${ad.slug}`}>
+              <div style={{background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'var(--radius)', overflow:'hidden', cursor:'pointer', transition:'all 0.2s'}} className="hover:shadow-lg hover:-translate-y-1 hover:border-brand/30">
+                <div style={{height:'180px', position: 'relative', overflow: 'hidden'}}>
+                  <img src={ad.image_url || 'https://placehold.co/400x300?text=No+Image'} alt={ad.title} style={{width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.5s'}} className="hover:scale-105" />
                 </div>
-                <div style={{fontWeight:600, marginBottom:'4px', fontSize:'14px'}}>{ad.title}</div>
-                <div style={{color:'var(--text2)', fontSize:'12px', marginBottom:'8px'}}>📍 {ad.city}</div>
-                <div style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
-                  <div style={{fontWeight:700, color:'var(--accent)'}}>{ad.price}</div>
-                  <div style={{color:'var(--text2)', fontSize:'11px'}}>⏱ {ad.days}d left</div>
+                <div style={{padding:'1.25rem'}}>
+                  <div style={{display:'flex', justifyContent:'space-between', marginBottom:'12px'}}>
+                    <span style={{background:'rgba(26,86,219,0.15)', color:'var(--brand)', fontSize:'11px', padding:'4px 10px', borderRadius:'20px', fontWeight: 600}}>{ad.categories?.name}</span>
+                    <span style={{background: ad.packages?.name==='Premium' ? 'rgba(124,58,237,0.15)' : ad.packages?.name==='Standard' ? 'rgba(26,86,219,0.1)' : 'rgba(255,255,255,0.05)', color: ad.packages?.name==='Premium' ? '#a78bfa' : ad.packages?.name==='Standard' ? 'var(--brand)' : 'var(--text2)', fontSize:'11px', padding:'4px 10px', borderRadius:'20px', fontWeight: 600}}>{ad.packages?.name}</span>
+                  </div>
+                  <div style={{fontWeight:600, marginBottom:'6px', fontSize:'15px'}}>{ad.title}</div>
+                  <div style={{color:'var(--text2)', fontSize:'12px', marginBottom:'12px'}}>📍 {ad.cities?.name}</div>
+                  <div style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
+                    <div style={{fontWeight:700, color:'var(--accent)', fontSize:'16px'}}>PKR {ad.price}</div>
+                    <div style={{color:'var(--text2)', fontSize:'11px', background: 'var(--bg)', padding: '4px 8px', borderRadius: '4px'}}>⏱ 30d left</div>
+                  </div>
                 </div>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
 

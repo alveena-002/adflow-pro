@@ -15,7 +15,7 @@ export default function Navbar() {
         <Link href="/" style={{color:'#94a3b8', textDecoration:'none', fontSize:'14px'}}>Home</Link>
         <Link href="/explore" style={{color:'#94a3b8', textDecoration:'none', fontSize:'14px'}}>Explore Ads</Link>
         <Link href="/packages" style={{color:'#94a3b8', textDecoration:'none', fontSize:'14px'}}>Packages</Link>
-        <Link href="/login" style={{color:'#94a3b8', textDecoration:'none', fontSize:'14px'}}>Login</Link>
+        <Link href="/login" style={{color:'#94a3b8', textDecoration:'none', fontSize:'14px'}}>Client Login</Link>
         <Link href="/register" style={{background:'#1a56db', color:'white', padding:'8px 16px', borderRadius:'10px', textDecoration:'none', fontWeight:500, fontSize:'14px'}}>Register</Link>
       </div>
 
