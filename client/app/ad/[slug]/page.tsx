@@ -81,9 +81,15 @@ export default function AdDetail() {
     // In a real app, save to backend or localStorage
   }
 
-  const handleShare = () => {
-    navigator.clipboard.writeText(window.location.href)
-    alert('Link copied to clipboard!')
+  const handleOrder = () => {
+    const token = localStorage.getItem('token')
+    if (token) {
+      const subject = encodeURIComponent(`Order for ${ad.title}`)
+      const body = encodeURIComponent(`Hi, I'm interested in your ad: ${ad.title}\n\nPrice: PKR ${ad.price}\n\nPlease let me know the next steps.`)
+      window.location.href = `mailto:${ad.contact_email}?subject=${subject}&body=${body}`
+    } else {
+      router.push('/login')
+    }
   }
 
   if (loading) {
@@ -216,6 +222,9 @@ export default function AdDetail() {
               Contact Seller
             </button>
             {showEmail && <div style={{ fontSize: '14px', color: 'var(--text)', marginBottom: '0.5rem' }}>Email: {ad.contact_email}</div>}
+            <button onClick={handleOrder} style={{ width: '100%', background: 'var(--accent)', color: 'white', padding: '12px', borderRadius: 'var(--radius)', border: 'none', cursor: 'pointer', marginBottom: '0.5rem' }}>
+              📧 Order Now
+            </button>
             <button onClick={handleSave} style={{ width: '100%', background: saved ? 'var(--accent)' : 'var(--bg)', border: '1px solid var(--border)', color: saved ? 'white' : 'var(--text)', padding: '12px', borderRadius: 'var(--radius)', cursor: 'pointer', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
               {saved ? '❤️' : '🤍'} {saved ? 'Saved' : 'Save Ad'}
             </button>
