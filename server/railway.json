@@ -1,0 +1,7 @@
+{
+  "name": "adflow-pro-server",
+  "runtime": "nodejs",
+  "builder": "heroku.buildpacks",
+  "buildCommand": "npm install",
+  "startCommand": "npm start"
+}
