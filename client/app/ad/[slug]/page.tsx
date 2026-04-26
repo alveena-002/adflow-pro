@@ -320,7 +320,7 @@ export default function AdDetail() {
               Contact Seller
             </button>
             {showEmail && <div style={{ fontSize: '14px', color: 'var(--text)', marginBottom: '0.5rem' }}>Email: {ad.contact_email}</div>}
-            <button onClick={handleOrder} style={{ width: '100%', background: 'var(--accent)', color: 'white', padding: '12px', borderRadius: 'var(--radius)', border: 'none', cursor: 'pointer', marginBottom: '0.5rem' }} disabled={user?.role === 'client'}>
+            <button onClick={handleOrder} style={{ width: '100%', background: 'var(--accent)', color: 'white', padding: '12px', borderRadius: 'var(--radius)', border: 'none', cursor: 'pointer', marginBottom: '0.5rem' }}>
               📧 Send Order
             </button>
             <button onClick={handleSave} style={{ width: '100%', background: saved ? 'var(--accent)' : 'var(--bg)', border: '1px solid var(--border)', color: saved ? 'white' : 'var(--text)', padding: '12px', borderRadius: 'var(--radius)', cursor: 'pointer', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
