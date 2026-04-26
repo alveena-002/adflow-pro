@@ -18,13 +18,13 @@ interface Ad {
   created_at: string
 }
 
-interface SimilarAd {
-  id: number
-  title: string
-  slug: string
-  price: number
-  image_url: string
-  categories: { name: string }
+interface User {
+  id: string
+  name: string
+  email: string
+  phone: string
+  city: string
+  role: string
 }
 
 export default function AdDetail() {
@@ -35,23 +35,52 @@ export default function AdDetail() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
   const [showEmail, setShowEmail] = useState(false)
-  const [showOrderForm, setShowOrderForm] = useState(false)
+  const [showOrderModal, setShowOrderModal] = useState(false)
+  const [user, setUser] = useState<User | null>(null)
   const [orderQuantity, setOrderQuantity] = useState(1)
-  const [orderMessage, setOrderMessage] = useState('I would like to place an order for this item. Please share the next steps and delivery details.')
+  const [orderMessage, setOrderMessage] = useState('')
   const [orderSubmitting, setOrderSubmitting] = useState(false)
-  const [orderSuccess, setOrderSuccess] = useState(false)
+  const [orderSuccess, setOrderSuccess] = useState('')
+  const [orderError, setOrderError] = useState('')
+  const [storedUser, setStoredUser] = useState<any>(null)
   const [saved, setSaved] = useState(false)
   const [fadeIn, setFadeIn] = useState(false)
 
   useEffect(() => {
     fetchAd()
     fetchSimilarAds()
+    fetchUser()
+    const stored = localStorage.getItem('user')
+    if (stored) {
+      try {
+        setStoredUser(JSON.parse(stored))
+      } catch (err) {
+        setStoredUser(null)
+      }
+    }
     setFadeIn(true)
   }, [slug])
 
+  const fetchUser = async () => {
+    const token = localStorage.getItem('token')
+    if (token) {
+      try {
+        const response = await fetch('http://localhost:5000/api/auth/me', {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+        if (response.ok) {
+          const data = await response.json()
+          setUser(data.user)
+        }
+      } catch (err) {
+        // Ignore
+      }
+    }
+  }
+
   const fetchAd = async () => {
     try {
-      const res = await fetch(`https://adflow-pro-production-e4e8.up.railway.app/api/ads/${slug}`)
+      const res = await fetch(`http://localhost:5000/api/ads/${slug}`)
       if (!res.ok) throw new Error('Ad not found')
       const data = await res.json()
       setAd(data.ad)
@@ -64,7 +93,7 @@ export default function AdDetail() {
 
   const fetchSimilarAds = async () => {
     try {
-      const res = await fetch('https://adflow-pro-production-e4e8.up.railway.app/api/ads')
+      const res = await fetch('http://localhost:5000/api/ads')
       const data = await res.json()
       setSimilarAds(data.ads.slice(0, 4)) // Take first 4 as similar
     } catch (err) {
@@ -89,24 +118,67 @@ export default function AdDetail() {
   const handleOrder = () => {
     const token = localStorage.getItem('token')
     if (token) {
-      setShowOrderForm(true)
-      setOrderSuccess(false)
+      setOrderError('')
+      setOrderSuccess('')
+      setShowOrderModal(true)
     } else {
       router.push('/login')
     }
   }
 
-  const submitOrder = () => {
-    if (!ad) return
+  const submitOrder = async () => {
+    if (!ad) {
+      setOrderError('Order cannot be created because ad data is missing.')
+      return
+    }
+
+    const token = localStorage.getItem('token')
+    if (!token) {
+      router.push('/login')
+      return
+    }
+
     setOrderSubmitting(true)
-    const subject = encodeURIComponent(`Order request for ${ad.title}`)
-    const body = encodeURIComponent(
-      `Hi,\n\nI would like to place an order for this ad:\n\n- Title: ${ad.title}\n- Price: PKR ${ad.price.toLocaleString()}\n- Quantity: ${orderQuantity}\n- City: ${ad.cities.name}\n\nMessage:\n${orderMessage}\n\nPlease send me the order confirmation and delivery details.`
-    )
-    const mailtoLink = `mailto:${ad.contact_email}?subject=${subject}&body=${body}`
-    setOrderSuccess(true)
-    setOrderSubmitting(false)
-    window.location.href = mailtoLink
+    setOrderError('')
+
+    try {
+      const response = await fetch('http://localhost:5000/api/orders', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          ad_id: ad.id,
+          quantity: orderQuantity,
+          message: orderMessage
+        })
+      })
+
+      const responseText = await response.text()
+      let data = null
+
+      try {
+        data = JSON.parse(responseText)
+      } catch (parseError) {
+        data = null
+      }
+
+      if (response.ok) {
+        setOrderSuccess('Order sent successfully! Check your email for confirmation.')
+        setShowOrderModal(false)
+        setOrderQuantity(1)
+        setOrderMessage('')
+      } else {
+        setOrderError(
+          data?.error || data?.message || responseText || `Order failed with status ${response.status}`
+        )
+      }
+    } catch (err) {
+      setOrderError(err?.message || 'Failed to send order. Please check your network and try again.')
+    } finally {
+      setOrderSubmitting(false)
+    }
   }
 
   const handleShare = () => {
@@ -248,37 +320,9 @@ export default function AdDetail() {
               Contact Seller
             </button>
             {showEmail && <div style={{ fontSize: '14px', color: 'var(--text)', marginBottom: '0.5rem' }}>Email: {ad.contact_email}</div>}
-            <button onClick={handleOrder} style={{ width: '100%', background: 'var(--accent)', color: 'white', padding: '12px', borderRadius: 'var(--radius)', border: 'none', cursor: 'pointer', marginBottom: '0.5rem' }}>
-              📧 Order Now
+            <button onClick={handleOrder} style={{ width: '100%', background: 'var(--accent)', color: 'white', padding: '12px', borderRadius: 'var(--radius)', border: 'none', cursor: 'pointer', marginBottom: '0.5rem' }} disabled={user?.role === 'client'}>
+              📧 Send Order
             </button>
-            {showOrderForm && (
-              <div style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '1rem', marginBottom: '0.75rem' }}>
-                <h4 style={{ color: 'var(--text)', fontWeight: 600, marginBottom: '0.75rem' }}>Order Request</h4>
-                <label style={{ display: 'block', marginBottom: '0.75rem', color: 'var(--text2)', fontSize: '14px' }}>
-                  Quantity
-                  <input
-                    type="number"
-                    min={1}
-                    value={orderQuantity}
-                    onChange={(e) => setOrderQuantity(Number(e.target.value))}
-                    style={{ width: '100%', marginTop: '0.5rem', padding: '10px', borderRadius: '10px', border: '1px solid var(--border)', background: 'var(--bg2)', color: 'var(--text)' }}
-                  />
-                </label>
-                <label style={{ display: 'block', marginBottom: '0.75rem', color: 'var(--text2)', fontSize: '14px' }}>
-                  Message
-                  <textarea
-                    rows={4}
-                    value={orderMessage}
-                    onChange={(e) => setOrderMessage(e.target.value)}
-                    style={{ width: '100%', marginTop: '0.5rem', padding: '10px', borderRadius: '10px', border: '1px solid var(--border)', background: 'var(--bg2)', color: 'var(--text)' }}
-                  />
-                </label>
-                <button onClick={submitOrder} disabled={orderSubmitting} style={{ width: '100%', background: 'var(--brand)', color: 'white', padding: '12px', borderRadius: 'var(--radius)', border: 'none', cursor: 'pointer', marginBottom: '0.75rem' }}>
-                  {orderSubmitting ? 'Preparing order...' : 'Send Order Email'}
-                </button>
-                {orderSuccess && <div style={{ color: 'var(--accent)', fontSize: '14px' }}>Order draft opened in your email app — send it to complete your order.</div>}
-              </div>
-            )}
             <button onClick={handleSave} style={{ width: '100%', background: saved ? 'var(--accent)' : 'var(--bg)', border: '1px solid var(--border)', color: saved ? 'white' : 'var(--text)', padding: '12px', borderRadius: 'var(--radius)', cursor: 'pointer', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
               {saved ? '❤️' : '🤍'} {saved ? 'Saved' : 'Save Ad'}
             </button>
@@ -315,6 +359,54 @@ export default function AdDetail() {
           ← Back
         </button>
       </div>
+
+      {/* Order Modal */}
+      {showOrderModal && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
+          <div style={{ background: 'var(--bg)', borderRadius: 'var(--radius)', padding: '2rem', maxWidth: '500px', width: '90%', maxHeight: '90vh', overflow: 'auto' }}>
+            <h3 style={{ color: 'var(--text)', marginBottom: '1rem' }}>Send Order</h3>
+            <div style={{ marginBottom: '1rem' }}>
+              <strong>Product:</strong> {ad.title}
+            </div>
+            <div style={{ marginBottom: '1rem' }}>
+              <strong>Price:</strong> PKR {ad.price.toLocaleString()}
+            </div>
+            <div style={{ marginBottom: '1rem' }}>
+              <strong>Buyer:</strong> {storedUser?.user_metadata?.name || storedUser?.email || user?.name || user?.email || 'Buyer'} ({storedUser?.user_metadata?.phone || user?.phone || 'No phone'})
+            </div>
+            <label style={{ display: 'block', marginBottom: '1rem', color: 'var(--text2)' }}>
+              Quantity
+              <input
+                type="number"
+                min={1}
+                value={orderQuantity}
+                onChange={(e) => setOrderQuantity(Number(e.target.value))}
+                style={{ width: '100%', marginTop: '0.5rem', padding: '10px', borderRadius: 'var(--radius)', border: '1px solid var(--border)', background: 'var(--bg2)', color: 'var(--text)' }}
+              />
+            </label>
+            <label style={{ display: 'block', marginBottom: '1rem', color: 'var(--text2)' }}>
+              Message
+              <textarea
+                rows={4}
+                value={orderMessage}
+                onChange={(e) => setOrderMessage(e.target.value)}
+                placeholder="Add any special instructions or questions..."
+                style={{ width: '100%', marginTop: '0.5rem', padding: '10px', borderRadius: 'var(--radius)', border: '1px solid var(--border)', background: 'var(--bg2)', color: 'var(--text)' }}
+              />
+            </label>
+            <div style={{ display: 'flex', gap: '1rem' }}>
+              <button onClick={submitOrder} disabled={orderSubmitting} style={{ flex: 1, background: 'var(--brand)', color: 'white', padding: '12px', borderRadius: 'var(--radius)', border: 'none', cursor: 'pointer' }}>
+                {orderSubmitting ? 'Sending...' : 'Send Order'}
+              </button>
+              <button onClick={() => setShowOrderModal(false)} style={{ flex: 1, background: 'var(--bg2)', border: '1px solid var(--border)', color: 'var(--text)', padding: '12px', borderRadius: 'var(--radius)', cursor: 'pointer' }}>
+                Cancel
+              </button>
+            </div>
+            {orderError && <div style={{ color: '#f87171', marginTop: '1rem' }}>{orderError}</div>}
+            {orderSuccess && <div style={{ color: 'var(--accent)', marginTop: '1rem' }}>{orderSuccess}</div>}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
