@@ -35,6 +35,7 @@ export default function AdDetail() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
   const [showEmail, setShowEmail] = useState(false)
+  const [showOrderOptions, setShowOrderOptions] = useState(false)
   const [saved, setSaved] = useState(false)
   const [fadeIn, setFadeIn] = useState(false)
 
@@ -84,11 +85,25 @@ export default function AdDetail() {
   const handleOrder = () => {
     const token = localStorage.getItem('token')
     if (token) {
-      const subject = encodeURIComponent(`Order for ${ad.title}`)
-      const body = encodeURIComponent(`Hi, I'm interested in your ad: ${ad.title}\n\nPrice: PKR ${ad.price}\n\nPlease let me know the next steps.`)
-      window.location.href = `mailto:${ad.contact_email}?subject=${subject}&body=${body}`
+      setShowOrderOptions(true)
     } else {
       router.push('/login')
+    }
+  }
+
+  const sendOrderEmail = () => {
+    if (!ad) return
+    const subject = encodeURIComponent(`Order for ${ad.title}`)
+    const body = encodeURIComponent(`Hi, I'm interested in your ad: ${ad.title}\n\nPrice: PKR ${ad.price}\n\nPlease let me know the next steps.`)
+    window.location.href = `mailto:${ad.contact_email}?subject=${subject}&body=${body}`
+  }
+
+  const handleShare = () => {
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(window.location.href)
+      alert('Link copied to clipboard!')
+    } else {
+      alert('Copy this link manually: ' + window.location.href)
     }
   }
 
@@ -225,6 +240,16 @@ export default function AdDetail() {
             <button onClick={handleOrder} style={{ width: '100%', background: 'var(--accent)', color: 'white', padding: '12px', borderRadius: 'var(--radius)', border: 'none', cursor: 'pointer', marginBottom: '0.5rem' }}>
               📧 Order Now
             </button>
+            {showOrderOptions && (
+              <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 'var(--radius)', padding: '1rem', marginBottom: '0.75rem' }}>
+                <p style={{ color: 'var(--text2)', marginBottom: '0.75rem', fontSize: '14px' }}>
+                  Click below to send a quick order request directly to the seller. We include the ad title and price automatically.
+                </p>
+                <button onClick={sendOrderEmail} style={{ width: '100%', background: 'var(--brand)', color: 'white', padding: '12px', borderRadius: 'var(--radius)', border: 'none', cursor: 'pointer' }}>
+                  Send Order Email
+                </button>
+              </div>
+            )}
             <button onClick={handleSave} style={{ width: '100%', background: saved ? 'var(--accent)' : 'var(--bg)', border: '1px solid var(--border)', color: saved ? 'white' : 'var(--text)', padding: '12px', borderRadius: 'var(--radius)', cursor: 'pointer', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
               {saved ? '❤️' : '🤍'} {saved ? 'Saved' : 'Save Ad'}
             </button>
