@@ -35,6 +35,11 @@ export default function AdDetail() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
   const [showEmail, setShowEmail] = useState(false)
+  const [showOrderForm, setShowOrderForm] = useState(false)
+  const [orderQuantity, setOrderQuantity] = useState(1)
+  const [orderMessage, setOrderMessage] = useState('I would like to place an order for this item. Please share the next steps and delivery details.')
+  const [orderSubmitting, setOrderSubmitting] = useState(false)
+  const [orderSuccess, setOrderSuccess] = useState(false)
   const [saved, setSaved] = useState(false)
   const [fadeIn, setFadeIn] = useState(false)
 
@@ -84,13 +89,23 @@ export default function AdDetail() {
   const handleOrder = () => {
     const token = localStorage.getItem('token')
     if (token) {
-      if (!ad) return
-      const subject = encodeURIComponent(`Order for ${ad.title}`)
-      const body = encodeURIComponent(`Hi, I'm interested in your ad: ${ad.title}\n\nPrice: PKR ${ad.price}\n\nPlease let me know the next steps.`)
-      window.location.href = `mailto:${ad.contact_email}?subject=${subject}&body=${body}`
+      setShowOrderForm(true)
+      setOrderSuccess(false)
     } else {
       router.push('/login')
     }
+  }
+
+  const submitOrder = () => {
+    if (!ad) return
+    setOrderSubmitting(true)
+    const subject = encodeURIComponent(`Order request for ${ad.title}`)
+    const body = encodeURIComponent(
+      `Hi,\n\nI would like to place an order for this ad:\n\n- Title: ${ad.title}\n- Price: PKR ${ad.price.toLocaleString()}\n- Quantity: ${orderQuantity}\n- City: ${ad.cities.name}\n\nMessage:\n${orderMessage}\n\nPlease send me the order confirmation and delivery details.`
+    )
+    window.location.href = `mailto:${ad.contact_email}?subject=${subject}&body=${body}`
+    setOrderSubmitting(false)
+    setOrderSuccess(true)
   }
 
   const handleShare = () => {
@@ -235,6 +250,34 @@ export default function AdDetail() {
             <button onClick={handleOrder} style={{ width: '100%', background: 'var(--accent)', color: 'white', padding: '12px', borderRadius: 'var(--radius)', border: 'none', cursor: 'pointer', marginBottom: '0.5rem' }}>
               📧 Order Now
             </button>
+            {showOrderForm && (
+              <div style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '1rem', marginBottom: '0.75rem' }}>
+                <h4 style={{ color: 'var(--text)', fontWeight: 600, marginBottom: '0.75rem' }}>Order Request</h4>
+                <label style={{ display: 'block', marginBottom: '0.75rem', color: 'var(--text2)', fontSize: '14px' }}>
+                  Quantity
+                  <input
+                    type="number"
+                    min={1}
+                    value={orderQuantity}
+                    onChange={(e) => setOrderQuantity(Number(e.target.value))}
+                    style={{ width: '100%', marginTop: '0.5rem', padding: '10px', borderRadius: '10px', border: '1px solid var(--border)', background: 'var(--bg2)', color: 'var(--text)' }}
+                  />
+                </label>
+                <label style={{ display: 'block', marginBottom: '0.75rem', color: 'var(--text2)', fontSize: '14px' }}>
+                  Message
+                  <textarea
+                    rows={4}
+                    value={orderMessage}
+                    onChange={(e) => setOrderMessage(e.target.value)}
+                    style={{ width: '100%', marginTop: '0.5rem', padding: '10px', borderRadius: '10px', border: '1px solid var(--border)', background: 'var(--bg2)', color: 'var(--text)' }}
+                  />
+                </label>
+                <button onClick={submitOrder} disabled={orderSubmitting} style={{ width: '100%', background: 'var(--brand)', color: 'white', padding: '12px', borderRadius: 'var(--radius)', border: 'none', cursor: 'pointer', marginBottom: '0.75rem' }}>
+                  {orderSubmitting ? 'Preparing order...' : 'Send Order Email'}
+                </button>
+                {orderSuccess && <div style={{ color: 'var(--accent)', fontSize: '14px' }}>Order draft opened in your email app.</div>}
+              </div>
+            )}
             <button onClick={handleSave} style={{ width: '100%', background: saved ? 'var(--accent)' : 'var(--bg)', border: '1px solid var(--border)', color: saved ? 'white' : 'var(--text)', padding: '12px', borderRadius: 'var(--radius)', cursor: 'pointer', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
               {saved ? '❤️' : '🤍'} {saved ? 'Saved' : 'Save Ad'}
             </button>
