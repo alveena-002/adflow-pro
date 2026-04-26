@@ -2,7 +2,7 @@
 
 ## Base URL
 ```
-http://localhost:5000/api
+https://adflow-pro-production-e4e8.up.railway.app/api
 ```
 
 ## Authentication

@@ -40,10 +40,10 @@ export default function EditAd({ params }: { params: { id: string } }) {
     }
 
     Promise.all([
-      fetch('http://localhost:5000/api/ads/categories').then((res) => res.json()),
-      fetch('http://localhost:5000/api/ads/cities').then((res) => res.json()),
-      fetch('http://localhost:5000/api/ads/packages').then((res) => res.json()),
-      fetch('http://localhost:5000/api/ads/my-ads', {
+      fetch('https://adflow-pro-production-e4e8.up.railway.app/api/ads/categories').then((res) => res.json()),
+      fetch('https://adflow-pro-production-e4e8.up.railway.app/api/ads/cities').then((res) => res.json()),
+      fetch('https://adflow-pro-production-e4e8.up.railway.app/api/ads/packages').then((res) => res.json()),
+      fetch('https://adflow-pro-production-e4e8.up.railway.app/api/ads/my-ads', {
         headers: { Authorization: `Bearer ${token}` },
       }).then((res) => res.json()),
     ])
@@ -84,7 +84,7 @@ export default function EditAd({ params }: { params: { id: string } }) {
     }
 
     try {
-      const res = await fetch(`http://localhost:5000/api/ads/${id}`, {
+      const res = await fetch(`https://adflow-pro-production-e4e8.up.railway.app/api/ads/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

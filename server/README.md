@@ -85,7 +85,7 @@ npm start
 npm run dev
 ```
 
-The server will start on `http://localhost:5000`
+The server will start on `https://adflow-pro-production-e4e8.up.railway.app`
 
 ## API Endpoints
 

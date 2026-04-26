@@ -25,7 +25,7 @@ export default function Explore() {
 
   const fetchAds = async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/ads')
+      const res = await fetch('https://adflow-pro-production-e4e8.up.railway.app/api/ads')
       const data = await res.json()
       setAds(data.ads)
     } catch (err) {

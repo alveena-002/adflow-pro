@@ -42,7 +42,7 @@ export default function Dashboard() {
 
   const fetchMyAds = async (token: string) => {
     try {
-      const res = await fetch('http://localhost:5000/api/ads/my-ads', {
+      const res = await fetch('https://adflow-pro-production-e4e8.up.railway.app/api/ads/my-ads', {
         headers: { Authorization: `Bearer ${token}` },
       })
       const data = await res.json()
@@ -67,7 +67,7 @@ export default function Dashboard() {
     if (!token) return router.push('/login')
 
     try {
-      const res = await fetch(`http://localhost:5000/api/ads/${id}`, {
+      const res = await fetch(`https://adflow-pro-production-e4e8.up.railway.app/api/ads/${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       })

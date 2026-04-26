@@ -16,9 +16,9 @@ export default function CreateAd() {
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/ads/categories').then(r=>r.json()).then(d=>setCategories(d.categories||[]))
-    fetch('http://localhost:5000/api/ads/cities').then(r=>r.json()).then(d=>setCities(d.cities||[]))
-    fetch('http://localhost:5000/api/ads/packages').then(r=>r.json()).then(d=>setPackages(d.packages||[]))
+    fetch('https://adflow-pro-production-e4e8.up.railway.app/api/ads/categories').then(r=>r.json()).then(d=>setCategories(d.categories||[]))
+    fetch('https://adflow-pro-production-e4e8.up.railway.app/api/ads/cities').then(r=>r.json()).then(d=>setCities(d.cities||[]))
+    fetch('https://adflow-pro-production-e4e8.up.railway.app/api/ads/packages').then(r=>r.json()).then(d=>setPackages(d.packages||[]))
   }, [])
 
   const handleSubmit = async () => {
@@ -26,7 +26,7 @@ export default function CreateAd() {
     setError('')
     try {
       const token = localStorage.getItem('token')
-      const res = await fetch('http://localhost:5000/api/ads', {
+      const res = await fetch('https://adflow-pro-production-e4e8.up.railway.app/api/ads', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ ...form, price: Number(form.price) })
