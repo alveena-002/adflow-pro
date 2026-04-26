@@ -103,9 +103,10 @@ export default function AdDetail() {
     const body = encodeURIComponent(
       `Hi,\n\nI would like to place an order for this ad:\n\n- Title: ${ad.title}\n- Price: PKR ${ad.price.toLocaleString()}\n- Quantity: ${orderQuantity}\n- City: ${ad.cities.name}\n\nMessage:\n${orderMessage}\n\nPlease send me the order confirmation and delivery details.`
     )
-    window.location.href = `mailto:${ad.contact_email}?subject=${subject}&body=${body}`
-    setOrderSubmitting(false)
+    const mailtoLink = `mailto:${ad.contact_email}?subject=${subject}&body=${body}`
     setOrderSuccess(true)
+    setOrderSubmitting(false)
+    window.location.href = mailtoLink
   }
 
   const handleShare = () => {
@@ -275,7 +276,7 @@ export default function AdDetail() {
                 <button onClick={submitOrder} disabled={orderSubmitting} style={{ width: '100%', background: 'var(--brand)', color: 'white', padding: '12px', borderRadius: 'var(--radius)', border: 'none', cursor: 'pointer', marginBottom: '0.75rem' }}>
                   {orderSubmitting ? 'Preparing order...' : 'Send Order Email'}
                 </button>
-                {orderSuccess && <div style={{ color: 'var(--accent)', fontSize: '14px' }}>Order draft opened in your email app.</div>}
+                {orderSuccess && <div style={{ color: 'var(--accent)', fontSize: '14px' }}>Order draft opened in your email app — send it to complete your order.</div>}
               </div>
             )}
             <button onClick={handleSave} style={{ width: '100%', background: saved ? 'var(--accent)' : 'var(--bg)', border: '1px solid var(--border)', color: saved ? 'white' : 'var(--text)', padding: '12px', borderRadius: 'var(--radius)', cursor: 'pointer', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
