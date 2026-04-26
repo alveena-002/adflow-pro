@@ -75,20 +75,6 @@ export default function Explore() {
           </select>
         </div>
 
-        {/* LOGIN AS CLIENT SECTION */}
-        <div style={{background:'linear-gradient(135deg, rgba(26,86,219,0.1) 0%, rgba(26,86,219,0.05) 100%)', border:'1px solid rgba(26,86,219,0.2)', borderRadius:'var(--radius)', padding:'2rem', marginBottom:'2rem', textAlign:'center'}}>
-          <h2 style={{fontFamily:'Syne', fontWeight:600, fontSize:'1.5rem', marginBottom:'0.5rem', color:'var(--brand)'}}>Post Your Own Ads</h2>
-          <p style={{color:'var(--text2)', marginBottom:'1.5rem'}}>Login as a client to create and manage your advertisements</p>
-          <div style={{display:'flex', gap:'1rem', justifyContent:'center', flexWrap:'wrap'}}>
-            <Link href="/login" style={{background:'var(--brand)', color:'white', padding:'12px 24px', borderRadius:'var(--radius)', textDecoration:'none', fontWeight:600, fontSize:'14px'}}>
-              Login as Client →
-            </Link>
-            <Link href="/register" style={{background:'var(--bg2)', border:'1px solid var(--border)', color:'var(--text)', padding:'12px 24px', borderRadius:'var(--radius)', textDecoration:'none', fontWeight:600, fontSize:'14px'}}>
-              Register as Client
-            </Link>
-          </div>
-        </div>
-
         {/* ADS GRID */}
         <div style={{display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(260px, 1fr))', gap:'1.5rem'}}>
           {ads.map((ad) => (
