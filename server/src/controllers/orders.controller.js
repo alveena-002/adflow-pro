@@ -1,5 +1,4 @@
-const supabase = require('../db/db')
-
+const supabase = require('../config/supabase')
 const createOrder = async (req, res) => {
   try {
     const { ad_id, quantity, message } = req.body
