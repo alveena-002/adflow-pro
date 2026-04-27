@@ -72,19 +72,8 @@ const login = async (req, res) => {
 
 // Get current user
 const getUser = async (req, res) => {
-  const user_id = req.user.id
-
-  const { data: user, error } = await supabase
-    .from('users')
-    .select('id, name, email, phone, city, role')
-    .eq('id', user_id)
-    .single()
-
-  if (error || !user) {
-    return res.status(404).json({ error: 'User not found' })
-  }
-
-  res.json({ user })
+  // Return user from JWT token directly
+  res.json({ user: req.user })
 }
 
 module.exports = { register, login, getUser }
