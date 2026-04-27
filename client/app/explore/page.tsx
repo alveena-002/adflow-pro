@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import Navbar from '../components/Navbar'
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+
 interface Ad {
   id: number
   title: string
@@ -25,7 +27,7 @@ export default function Explore() {
 
   const fetchAds = async () => {
     try {
-      const res = await fetch('https://adflow-pro-production-e4e8.up.railway.app/api/ads')
+      const res = await fetch(`${API_BASE_URL}/api/ads`)
       const data = await res.json()
       setAds(data.ads)
     } catch (err) {

@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+
 interface AdForm {
   title: string
   description: string
@@ -40,10 +42,10 @@ export default function EditAd({ params }: { params: { id: string } }) {
     }
 
     Promise.all([
-      fetch('https://adflow-pro-production-e4e8.up.railway.app/api/ads/categories').then((res) => res.json()),
-      fetch('https://adflow-pro-production-e4e8.up.railway.app/api/ads/cities').then((res) => res.json()),
-      fetch('https://adflow-pro-production-e4e8.up.railway.app/api/ads/packages').then((res) => res.json()),
-      fetch('https://adflow-pro-production-e4e8.up.railway.app/api/ads/my-ads', {
+      fetch(`${API_BASE_URL}/api/ads/categories`).then((res) => res.json()),
+      fetch(`${API_BASE_URL}/api/ads/cities`).then((res) => res.json()),
+      fetch(`${API_BASE_URL}/api/ads/packages`).then((res) => res.json()),
+      fetch(`${API_BASE_URL}/api/ads/my-ads`, {
         headers: { Authorization: `Bearer ${token}` },
       }).then((res) => res.json()),
     ])
@@ -84,7 +86,7 @@ export default function EditAd({ params }: { params: { id: string } }) {
     }
 
     try {
-      const res = await fetch(`https://adflow-pro-production-e4e8.up.railway.app/api/ads/${id}`, {
+      const res = await fetch(`${API_BASE_URL}/api/ads/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

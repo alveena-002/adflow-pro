@@ -5,6 +5,8 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import Navbar from '../components/Navbar'
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+
 interface Ad {
   id: string
   title: string
@@ -42,7 +44,7 @@ export default function Dashboard() {
 
   const fetchMyAds = async (token: string) => {
     try {
-      const res = await fetch('https://adflow-pro-production-e4e8.up.railway.app/api/ads/my-ads', {
+      const res = await fetch(`${API_BASE_URL}/api/ads/my-ads`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       const data = await res.json()
@@ -67,7 +69,7 @@ export default function Dashboard() {
     if (!token) return router.push('/login')
 
     try {
-      const res = await fetch(`https://adflow-pro-production-e4e8.up.railway.app/api/ads/${id}`, {
+      const res = await fetch(`${API_BASE_URL}/api/ads/${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       })

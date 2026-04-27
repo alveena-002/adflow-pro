@@ -3,6 +3,8 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+
 export default function CreateAd() {
   const router = useRouter()
   const [form, setForm] = useState({
@@ -16,9 +18,9 @@ export default function CreateAd() {
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    fetch('https://adflow-pro-production-e4e8.up.railway.app/api/ads/categories').then(r=>r.json()).then(d=>setCategories(d.categories||[]))
-    fetch('https://adflow-pro-production-e4e8.up.railway.app/api/ads/cities').then(r=>r.json()).then(d=>setCities(d.cities||[]))
-    fetch('https://adflow-pro-production-e4e8.up.railway.app/api/ads/packages').then(r=>r.json()).then(d=>setPackages(d.packages||[]))
+    fetch(`${API_BASE_URL}/api/ads/categories`).then(r=>r.json()).then(d=>setCategories(d.categories||[]))
+    fetch(`${API_BASE_URL}/api/ads/cities`).then(r=>r.json()).then(d=>setCities(d.cities||[]))
+    fetch(`${API_BASE_URL}/api/ads/packages`).then(r=>r.json()).then(d=>setPackages(d.packages||[]))
   }, [])
 
   const handleSubmit = async () => {
@@ -26,7 +28,7 @@ export default function CreateAd() {
     setError('')
     try {
       const token = localStorage.getItem('token')
-      const res = await fetch('https://adflow-pro-production-e4e8.up.railway.app/api/ads', {
+      const res = await fetch(`${API_BASE_URL}/api/ads`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ ...form, price: Number(form.price) })

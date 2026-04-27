@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+
 interface Ad {
   id: number
   title: string
@@ -65,7 +67,7 @@ export default function AdDetail() {
     const token = localStorage.getItem('token')
     if (token) {
       try {
-        const response = await fetch('http://localhost:5000/api/auth/me', {
+        const response = await fetch(`${API_BASE_URL}/api/auth/me`, {
           headers: { Authorization: `Bearer ${token}` }
         })
         if (response.ok) {
@@ -80,7 +82,7 @@ export default function AdDetail() {
 
   const fetchAd = async () => {
     try {
-      const res = await fetch(`http://localhost:5000/api/ads/${slug}`)
+      const res = await fetch(`${API_BASE_URL}/api/ads/${slug}`)
       if (!res.ok) throw new Error('Ad not found')
       const data = await res.json()
       setAd(data.ad)
@@ -93,7 +95,7 @@ export default function AdDetail() {
 
   const fetchSimilarAds = async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/ads')
+      const res = await fetch(`${API_BASE_URL}/api/ads`)
       const data = await res.json()
       setSimilarAds(data.ads.slice(0, 4)) // Take first 4 as similar
     } catch (err) {
@@ -142,7 +144,7 @@ export default function AdDetail() {
     setOrderError('')
 
     try {
-      const response = await fetch('http://localhost:5000/api/orders', {
+      const response = await fetch(`${API_BASE_URL}/api/orders`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

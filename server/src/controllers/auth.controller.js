@@ -1,4 +1,5 @@
 const supabase = require('../config/supabase')
+const jwt = require('jsonwebtoken')
 
 // Register
 const register = async (req, res) => {
@@ -15,19 +16,22 @@ const register = async (req, res) => {
 
   if (error) return res.status(400).json({ error: error.message })
 
-  // Auto login after register
-  const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({
-    email,
-    password
-  })
-
-  if (loginError) return res.status(201).json({ message: 'Registered! Please login.', user: data.user })
+  // Generate JWT token
+  const token = jwt.sign(
+    { id: data.user.id, email: data.user.email, role: userRole },
+    process.env.JWT_SECRET,
+    { expiresIn: '30d' }
+  )
 
   res.status(201).json({
     message: 'Account created successfully',
-    token: loginData.session.access_token,
+    token,
     user: {
-      ...loginData.user,
+      id: data.user.id,
+      email: data.user.email,
+      name,
+      phone,
+      city,
       role: userRole
     }
   })
@@ -46,10 +50,21 @@ const login = async (req, res) => {
 
   const role = data.user.user_metadata?.role || 'buyer'
 
+  // Generate JWT token
+  const token = jwt.sign(
+    { id: data.user.id, email: data.user.email, role },
+    process.env.JWT_SECRET,
+    { expiresIn: '30d' }
+  )
+
   res.json({
-    token: data.session.access_token,
+    token,
     user: {
-      ...data.user,
+      id: data.user.id,
+      email: data.user.email,
+      name: data.user.user_metadata?.name || '',
+      phone: data.user.user_metadata?.phone || '',
+      city: data.user.user_metadata?.city || '',
       role
     }
   })
