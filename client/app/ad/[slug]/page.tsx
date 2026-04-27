@@ -7,7 +7,7 @@ import Link from 'next/link'
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://adflow-pro-production-e4e8.up.railway.app'
 
 interface Ad {
-  id: number
+  id: string
   title: string
   description: string
   price: number
